@@ -7,4 +7,4 @@ class CuisineModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    reciepes: Mapped[List['RecipeModel'] | None] = relationship()
+    recipes: Mapped[List['RecipeModel'] | None] = relationship(back_populates='cuisine')

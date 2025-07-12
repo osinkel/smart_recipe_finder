@@ -1,34 +1,40 @@
 from typing import Any, List
-from src.models.ingredients import IngredientModel
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from src.services.base import BaseDataManager, BaseService
-from src.schemas.ingredients import IngredientPostSchema, IngredientSchema
+from src.schemas.ingredients import IngredientGetSchema
+from src.models.ingredients import IngredientModel
 from src.models.recipes import RecipeModel
+from src.schemas.ingredients import IngredientSuccessResponse, IngredientsSuccessResponse, IngredientSchema
+from src.schemas.responses import ErrorMsg, ErrorResponse, Status
 
 class IngredientService(BaseService):
-    async def get_ingredient_by_id(self, id: id) -> IngredientPostSchema:
+    async def get_ingredient_by_id(self, id: id) -> IngredientSuccessResponse | ErrorResponse:
         model = await IngredientDataManager(self.session).get_ingredient_by_prop(id, "id")
-        return IngredientPostSchema.model_validate(model, from_attributes=True) if model else None
-
-    async def add_many_ingredients(self, ingredients: List[str]) -> List[IngredientPostSchema]:
-        models = await IngredientDataManager(self.session).add_many_ingredients(ingredients)
-        result_schemas = [IngredientPostSchema.model_validate(model, from_attributes=True) for model in models]
-        return result_schemas if await self.session_commit() else []
+        
+        if model:
+            return IngredientSuccessResponse(status=Status.SUCCESS, result=IngredientGetSchema.model_validate(model, from_attributes=True))
+        else:
+            return ErrorResponse(status=Status.ERROR, message=ErrorMsg.BAD_ID)
 
 class IngredientDataManager(BaseDataManager):
 
     async def get_ingredients_by_prop(self, list_val: List[Any], prop: str) -> List[IngredientModel]:
-        query = select(IngredientModel).where(getattr(IngredientModel, prop).in_(list_val))
+        query = select(IngredientModel).options(selectinload(IngredientModel.recipes)).where(getattr(IngredientModel, prop).in_(list_val))
         models = await self.get_all(query)
         return models
 
     async def get_ingredient_by_prop(self, val: Any, prop: str) -> List[IngredientModel]:
-        query = select(IngredientModel).where(getattr(IngredientModel, prop) == val)
+        query = select(IngredientModel).options(selectinload(IngredientModel.recipes)).where(getattr(IngredientModel, prop) == val)
         models = await self.get_one(query)
         return models
 
-    async def add_many_ingredients(self, recipe: RecipeModel, ingredients: List[str]) -> List[IngredientModel]:
-        new_ingredients = [IngredientModel(name=ingr, recipes=[recipe]) for ingr in ingredients]
+    async def add_many_ingredients(self, recipe: RecipeModel | None, ingredients: List[str]) -> List[IngredientModel]:
+        if recipe:
+            new_ingredients = [IngredientModel(name=ingr, recipes=[recipe]) for ingr in ingredients]
+        else: 
+            new_ingredients = [IngredientModel(name=ingr) for ingr in ingredients]
+
         await self.add_all(new_ingredients)
         return new_ingredients
     

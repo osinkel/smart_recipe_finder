@@ -1,24 +1,26 @@
 from typing import List, Any
-from src.models.cuisines import CuisineModel
+from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 from src.services.base import BaseDataManager, BaseService
-from src.schemas.cuisines import CuisineSchema, CuisinePostSchema, CuisineGetSchema
+from src.models.cuisines import CuisineModel
+from src.schemas.cuisines import CuisineSchema, CuisineGetSchema
+from src.schemas.cuisines import CuisineSuccessResponse
+from src.schemas.responses import ErrorResponse, Status, ErrorMsg
 
 class CuisineService(BaseService):
     
     async def get_cuisine_by_id(self, id: int) -> CuisineGetSchema | None:
         model = await CuisineDataManager(self.session).get_cuisine_by_prop(id, 'id')
-        return CuisineGetSchema.model_validate(model, from_attributes=True) if model else None
-
-    async def add_cuisine(self, cuisine: CuisineSchema) -> CuisinePostSchema | None:
-        model = await CuisineDataManager(self.session).add_cuisine(cuisine)
-        result_scheme = CuisinePostSchema.model_validate(model, from_attributes=True)
-        return result_scheme if await self.session_commit() else None
+         
+        if model:
+            return CuisineSuccessResponse(status=Status.SUCCESS, result=CuisineGetSchema.model_validate(model, from_attributes=True))
+        else:
+            return ErrorResponse(status=Status.ERROR, message=ErrorMsg.BAD_ID)  
 
 class CuisineDataManager(BaseDataManager):
 
     async def get_cuisine_by_prop(self, val: Any, prop: str) -> List[CuisineModel] | None:
-        query = select(CuisineModel).where(getattr(CuisineModel, prop) == val)
+        query = select(CuisineModel).options(selectinload(CuisineModel.recipes)).where(getattr(CuisineModel, prop) == val)
         model = await self.get_one(query)
         return model
 

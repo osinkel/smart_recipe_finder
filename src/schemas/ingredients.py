@@ -1,12 +1,15 @@
+from typing import List
 from pydantic import BaseModel
 from src.schemas.responses import BaseResponse
 
 class IngredientSchema(BaseModel):
     name: str
 
-class IngredientPostSchema(BaseModel):
+class IngredientGetSchema(IngredientSchema):
     id: int
-    name: str
 
 class IngredientSuccessResponse(BaseResponse):
-    result: IngredientPostSchema
+    result: IngredientGetSchema
+
+class IngredientsSuccessResponse(BaseResponse):
+    result: List[IngredientGetSchema]

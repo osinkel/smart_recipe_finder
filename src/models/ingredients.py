@@ -7,4 +7,4 @@ class IngredientModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] 
-    recipes: Mapped[List["RecipeModel"] | None] = relationship(secondary="association_table", back_populates="ingredients")
+    recipes: Mapped[List["RecipeModel"] | None] = relationship(secondary="recipes_ingredients_table", back_populates="ingredients")

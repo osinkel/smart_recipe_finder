@@ -1,6 +1,6 @@
 import traceback
 from typing import Any, List, Sequence
-from src.database import Session
+from src.routers.dependencies import Session
 from sqlalchemy.sql.expression import Executable
 from src.config import logger
 
@@ -38,6 +38,9 @@ class BaseDataManager(SessionMixin):
     async def get_one(self, query: Executable) -> Any:
         result = await self.session.execute(query)
         return result.scalar()
+    
+    async def execute(self, query: Executable, params: dict = None) -> Any:
+        return await self.session.execute(query, params)
 
     async def get_all(self, query: Executable) -> List[Any]:
         result = await self.session.execute(query)

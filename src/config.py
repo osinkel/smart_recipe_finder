@@ -11,11 +11,12 @@ class Config(BaseSettings):
     )
 
     db_url: str = ''
+    db_url_test: str = ''
 
 config = Config()
 
 config.db_url = f'postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@{config.postgres_host}:{config.postgres_port}/{config.postgres_name}'
-
+config.db_url_test = f'postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@{config.postgres_host}:{config.postgres_port}/{config.postgres_name_test}'
 
 FORMAT = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s: %(lineno)d - %(message)s"
 
