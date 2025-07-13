@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
  
  ```sh
-docker run --name pgvector-container -e POSTGRES_USER=langchain -e POSTGRES_PASSWORD=langchain -e POSTGRES_DB=langchain -p 6024:5432 -d pgvector/pgvector:pg16
+docker run --name pgvector-container -e POSTGRES_USER=langchain -e POSTGRES_PASSWORD=langchain -e POSTGRES_DB=langchain -p 5432:5432 -d pgvector/pgvector:pg16
 ```
  3. Then, in .env file uncomment POSTGRES_HOST variable for local running and to commit for docker running
 
