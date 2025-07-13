@@ -79,17 +79,3 @@ async def test_recipe_filter(session: Session, recipes: List[Dict], filters: Lis
 
             for exclude in filter['exclude']:
                 assert exclude not in ingredients
-
-
-@pytest.mark.parametrize("recipes, search_data", data_to_search_similarity)
-@pytest.mark.asyncio(loop_scope="session")
-async def test_recipe_search_by_content_similarity(session: Session, recipes: List[Dict], search_data: List[Dict]) -> None:
-    for recipe in recipes:
-        await RecipeService(session).add_recipe(RecipeSchema.model_validate(recipe))
-
-    for search in search_data:
-        result = await RecipeService(session).get_similarities(search['search_text'], search['limit'])
-
-        assert result.status == Status.SUCCESS
-        if result.result:
-            assert result.result[0].title == search['expected_best_recipe']

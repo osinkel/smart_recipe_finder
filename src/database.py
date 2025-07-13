@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from src.config import config
 
-engine = create_async_engine(config.db_url, echo=True)
+engine = create_async_engine(config.db_url)
 
 new_async_session = async_sessionmaker(bind=engine, autoflush=False)
 
@@ -22,8 +22,8 @@ async def init_db():
             logger.error(f"Error creating pgvector extension: {e}")
 
 
-        # await conn.run_sync(Base.metadata.drop_all)
-        # await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_session():

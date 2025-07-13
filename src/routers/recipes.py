@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import List
 from fastapi import APIRouter, Query
 from src.services.recipes import RecipeService
 from src.routers.dependencies import Session
@@ -39,10 +39,6 @@ async def filter_recipes_by_ingredients(
     exclude: List[str] = Query([]),
     ):
     return await RecipeService(session).filter_recipes_by_ingredients(include, exclude)
-
-@router.get('/recipes/search/', tags=['recipes'],response_model=RecipeListSuccessResponse | ErrorResponse)
-async def search_similarity_recipes_by_content(session: Session, search_text: str = Query(), limit: int = Query()):
-    return await RecipeService(session).get_similarities(search_text, limit)
 
 
 @router.delete('/recipes/{id}', tags=['recipes'],response_model= RecipeSuccessDeleteResponse | ErrorResponse)

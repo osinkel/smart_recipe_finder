@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Column, ForeignKey, Table
 from src.database import Base
 from src.schemas.recipes import Difficulty
-from pgvector.sqlalchemy import Vector
 
 association_table = Table(
     "recipes_ingredients_table",
@@ -23,4 +22,3 @@ class RecipeModel(Base):
     difficulty: Mapped[Difficulty]
     cuisine_id: Mapped[int | None] = mapped_column(ForeignKey('cuisines.id'))
     cuisine: Mapped["CuisineModel"] = relationship(back_populates="recipes")
-    embedding: Mapped[Vector | None] = mapped_column(type_=Vector) # Column(Vector) #

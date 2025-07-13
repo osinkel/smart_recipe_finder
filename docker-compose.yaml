@@ -31,5 +31,5 @@ services:
  postgres_db:
   image: pgvector/pgvector:pg16
   ports:
-    - 6024:5432
+    - 5432:5432
   env_file: ".env"

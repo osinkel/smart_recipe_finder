@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import delete, select, text
+from sqlalchemy import delete, select
 from src.models.recipes import RecipeModel
 from src.models.ingredients import IngredientModel
 from src.services.base import BaseDataManager, BaseService
@@ -7,7 +7,6 @@ from src.services.ingredients import  IngredientDataManager
 from src.services.cuisines import CuisineDataManager
 from src.schemas.recipes import RecipeSchema, RecipeGetSchema
 from sqlalchemy.orm import selectinload
-from sqlalchemy import and_
 from src.schemas.recipes import (
     RecipeSchema, 
     RecipeSuccessDeleteResponse, 
@@ -69,28 +68,9 @@ class RecipeService(BaseService):
             result.result = [RecipeGetSchema.model_validate(recipe, from_attributes=True) for recipe in recipes]
 
         return result
-    
-    async def get_similarities(self, search_text: str, limit: int):
-        recipes = await RecipeDataManager(self.session).get_similarities(search_text, limit)
-        if recipes is not None:
-            result = RecipeListSuccessResponse(status=Status.SUCCESS)
-            if recipes:
-                result.result = [RecipeGetSchema.model_validate(recipe, from_attributes=True) for recipe in recipes]
-            return result
-        else:
-            return ErrorResponse(status=Status.ERROR, message=ErrorMsg.DB_ERROR)
-        
 
 
 class RecipeDataManager(BaseDataManager):
-
-    def model_to_embeding(self, model: RecipeModel):
-        return f"{model.title} \
-                {[ingr.name for ingr in model.ingredients]} \
-                {model.preparation_instructions} \
-                {model.cooking_time} minute \
-                {model.difficulty.value} \
-                {model.cuisine.name}" 
 
     async def add_recipe(self, recipe: RecipeSchema) -> RecipeModel | None:
         new_recipe = RecipeModel(
@@ -105,7 +85,7 @@ class RecipeDataManager(BaseDataManager):
 
         new_recipe.cuisine = cuisine
         new_recipe.ingredients = ingredients
-        new_recipe.embedding = await self.aembed_query(self.model_to_embeding(new_recipe))
+
         await self.add_one(new_recipe)
         return new_recipe
     
@@ -136,7 +116,6 @@ class RecipeDataManager(BaseDataManager):
         old_recipe.difficulty = new_recipe.difficulty
         old_recipe.ingredients = new_ingredients
         old_recipe.cuisine = new_cuisine
-        old_recipe.embedding = await self.aembed_query(self.model_to_embeding(new_recipe))
         
         await self.add_one(old_recipe)
 
@@ -158,28 +137,5 @@ class RecipeDataManager(BaseDataManager):
         recipes = list(set(recipe for recipe in recipes_include if not recipe in recipes_exclude))
 
         return recipes
-    
-
-    async def get_similarities(self, search_text: str, limit: int) -> List[RecipeModel]:
-        search_text_embedding = await self.aembed_query(search_text)
-
-        # Use pgvector to calculate similarity with all readme_embedding
-        similarity_query = text(
-            """
-            SELECT id, (embedding <-> :search_text_embedding) AS similarity 
-            FROM recipes 
-            ORDER BY similarity ASC 
-            LIMIT :limit;
-        """
-        )
-
-        similarities_result = await self.execute(similarity_query, {'search_text_embedding': str(search_text_embedding), 'limit': limit})
-        similarities_id = similarities_result.all()
-        similarities_id_order = { v.id: k for k, v in enumerate(similarities_id) }
-        
-        query = select(RecipeModel).options(selectinload(RecipeModel.ingredients), selectinload(RecipeModel.cuisine)).filter(RecipeModel.id.in_(similarities_id_order))
-        models = await self.get_all(query)
-        models_same_order = sorted(models, key=lambda model: similarities_id_order.get(model.id))
-        return models_same_order
 
         

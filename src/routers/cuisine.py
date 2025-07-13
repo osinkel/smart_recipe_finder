@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from src.services.cuisines import CuisineService
 from src.schemas.cuisines import CuisineSuccessResponse
-from src.schemas.responses import ErrorResponse, Status, ErrorMsg
+from src.schemas.responses import ErrorResponse
 from src.routers.dependencies import Session
 
 router = APIRouter()
