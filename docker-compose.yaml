@@ -1,0 +1,35 @@
+services:
+ smart_recipe_finder:
+  container_name: smart_recipe_finder
+  build:
+    context: .
+  ports:
+    - 8000:8000 
+  depends_on:
+    postgres_db:
+      condition: service_started
+  env_file:
+    - .env
+  restart: "on-failure:5"
+  command: bash -c "python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000"
+
+
+ tests:
+  container_name: tests
+  build:
+    context: .
+  ports:
+    - 8001:8001 
+  depends_on:
+    smart_recipe_finder:
+      condition: service_started
+  env_file: ".env"
+  command: bash -c "sleep 5;
+    python -m pytest tests/api/test_recipes.py;
+    python -m pytest tests/crud/test_recipes.py"
+
+ postgres_db:
+  image: pgvector/pgvector:pg16
+  ports:
+    - 6024:5432
+  env_file: ".env"

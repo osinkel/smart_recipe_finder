@@ -1,6 +1,6 @@
 import traceback
 from typing import Any, List, Sequence
-from src.routers.dependencies import Session
+from src.routers.dependencies import Session, embedding_function
 from sqlalchemy.sql.expression import Executable
 from src.config import logger
 
@@ -23,6 +23,9 @@ class BaseService(SessionMixin):
     pass
 
 class BaseDataManager(SessionMixin):
+
+    async def aembed_query(self, text: str) -> list[float]:
+        return await embedding_function.aembed_query(text)
 
     async def add_one(self, model: Any) -> None:
         self.session.add(model)
