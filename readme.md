@@ -45,7 +45,11 @@ docker-compose up
 ```
 
 ### I highly recommend using local run without (docker-compose)
-Because of natural language search uses ML model (HuggingFace)  the service has quite heavy libraries that will not allow you to successfully launch the build in a short time. On my computer it was more than 3000 seconds
+Because of natural language search uses ML model (HuggingFace)  the service has quite heavy libraries that will not allow you to successfully launch the build in a short time. On my computer it was more than 3000 seconds 
+
+!OR! 
+
+You can change branch on "without_nlp_search", where no natural language search functionality and docker-compose will be build much faster
 
 ## Local running instructions (without docker-compose)
 

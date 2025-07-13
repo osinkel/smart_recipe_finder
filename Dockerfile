@@ -11,7 +11,3 @@ RUN python -c "from langchain_huggingface.embeddings import HuggingFaceEmbedding
             model_kwargs={'device': 'cpu'}, \
             encode_kwargs={'normalize_embeddings': False}\
             )"
-
-# CMD ["uvicorn", "src.main:app", "--reload"]
-# CMD ["python", "main.py"]
-# CMD ["python", "-m", "uvicorn", "src.main:app", "--reload"]
